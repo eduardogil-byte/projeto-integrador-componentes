@@ -95,9 +95,12 @@ def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px
 
     cantos_finais_px = np.int32([pontos_com_padding])
 
-    esta_presente, score = verificar_presenca_componente(img_copy, cantos_finais_px)
-    
-    color = (0,255,0) if esta_presente else (0,0,255)
+    if comp["ref"] == "R1":
+        esta_presente, score = verificar_presenca_componente(img_copy, cantos_finais_px)
+        color = (0,255,0) if esta_presente else (0,0,255)
+
+    else: 
+        color = (0,255,0)
 
     cv2.polylines(img, cantos_finais_px, isClosed=True, color=color, thickness=2)
 

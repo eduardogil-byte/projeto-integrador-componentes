@@ -8,6 +8,7 @@ from app.debug.draw import desenhar_ponto_e_label, desenhar_caixa_aproximada_mat
 
 from app.vision.align import align
 
+
 def run_overlay_referencia(
     caminho_img: str,
     caminho_csv: str,

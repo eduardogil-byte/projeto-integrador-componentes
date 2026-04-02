@@ -1,6 +1,7 @@
 import cv2
 from app.geometry.boxes import obter_tamanho_package_mm
 from app.geometry.mm_to_pixel import calcular_escala
+from app.vision.analyze import verificar_presenca_componente
 import numpy as np
 
 
@@ -52,6 +53,8 @@ def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px
     y_mm = comp["y_mm"]
     rot = comp["rot"]
 
+    img_copy = img.copy()
+
     if abs(rot) % 180 == 90:
         w_mm, h_mm = h_mm, w_mm
 
@@ -92,7 +95,11 @@ def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px
 
     cantos_finais_px = np.int32([pontos_com_padding])
 
-    cv2.polylines(img, cantos_finais_px, isClosed=True, color=(0, 255, 0), thickness=2)
+    esta_presente, score = verificar_presenca_componente(img_copy, cantos_finais_px)
+    
+    color = (0,255,0) if esta_presente else (0,0,255)
+
+    cv2.polylines(img, cantos_finais_px, isClosed=True, color=color, thickness=2)
 
 
 

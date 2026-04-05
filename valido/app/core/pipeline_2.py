@@ -28,7 +28,7 @@ def run_overlay_referencia(
     #     # print("Pontos manual")
     #     # print(pontos_parafuso_img)
     # elif opc == 2:
-    pontos_parafuso_img = align_todos_circulos(img)
+    pontos_parafuso_img = align(img)
 
     # pontos_parafuso_img = align(img)
 

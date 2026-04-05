@@ -1,12 +1,12 @@
 import os
 import cv2
 import numpy as np
-from app.kicad.parser import carregar_componentes, carregar_pontos_parafusos
+from app.kicad.parser import carregar_componentes, carregar_pontos_parafusos, ordernar_pontos
 from app.geometry.mm_to_pixel import obter_limites, mm_para_pixel, mm_para_pixel_perspectiva
 from app.vision.io import carregar_imagem
 from app.debug.draw import desenhar_ponto_e_label, desenhar_caixa_aproximada_matriz
 
-from app.vision.align import align
+from app.vision.align import align, align_auto, align_auto_binario, align_auto_canny, align_todos_circulos
 
 
 def run_overlay_referencia(
@@ -19,7 +19,18 @@ def run_overlay_referencia(
     img = carregar_imagem(caminho_img)
     componentes = carregar_componentes(caminho_csv)
 
-    pontos_parafuso_img = align(img)
+    # opc = int(input("Coloque 1 para manual 2 para automatico: "))
+
+    # if opc == 1:
+    #     pontos_parafuso_img = align(img)
+    #     # pontos_parafuso_img = np.float32(pontos_parafuso_img)
+    #     # pontos_parafuso_img = ordernar_pontos(pontos_parafuso_img)
+    #     # print("Pontos manual")
+    #     # print(pontos_parafuso_img)
+    # elif opc == 2:
+    pontos_parafuso_img = align_todos_circulos(img)
+
+    # pontos_parafuso_img = align(img)
 
     print(f"[INFO] Componentes válidos: {len(componentes)}")
 
@@ -31,6 +42,12 @@ def run_overlay_referencia(
 
     print(f"ponto parafuso: {len(ponto_foto_px)}")
     print(f"ponto parafuso: {len(carregar_pontos_p)}")
+
+    pontos_csv_mm = ordernar_pontos(pontos_csv_mm)
+    pontos_csv_mm = np.float32(pontos_csv_mm)
+
+    print("pontos ordenados")
+    print(pontos_csv_mm)
 
     matriz = cv2.getPerspectiveTransform(pontos_csv_mm, ponto_foto_px)
 

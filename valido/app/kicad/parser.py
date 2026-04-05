@@ -1,6 +1,7 @@
 import csv
 from typing import List, Dict
 from app.kicad.filters import deve_ignorar
+import numpy as np
 
 
 def carregar_componentes(caminho_csv: str) -> List[Dict]:
@@ -46,14 +47,18 @@ def carregar_pontos_parafusos(caminho_csv: str) -> List[List]:
 
                 except Exception as e:
                     print(f"[WARN] Erro ao converter coordenadas do furo: {e}")
-                """ try:
-                    comp = {
-                        "ref": row["Ref"].strip().replace('"',""),
-                        "x_mm": float(row["PosX"]),
-                        "y_mm": float(row["PosY"]),
-                    }
-                except Exception as e:
-                    print(f"[WARN] Linha ignorada: {row} | erro: {e}") """
                 
-
     return pontos
+
+def ordernar_pontos(pts):
+    rect = np.zeros((4, 2), dtype="float32")
+
+    s = pts.sum(axis=1)
+    rect[0] = pts[np.argmin(s)]
+    rect[2] = pts[np.argmax(s)]
+
+    diff = np.diff(pts, axis=1)
+    rect[1] = pts[np.argmin(diff)]
+    rect[3] = pts[np.argmax(diff)]
+
+    return rect

@@ -1,7 +1,7 @@
 import cv2
 from app.geometry.boxes import obter_tamanho_package_mm
 from app.geometry.mm_to_pixel import calcular_escala
-from app.vision.analyze import verificar_presenca_componente
+from app.vision.analyze import verificar_presenca_componente, verificar_presenca_componente_desvio_padrao, verificar_presenca_componente_desvio_padrao_sem_reflexo
 import numpy as np
 
 
@@ -95,12 +95,10 @@ def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px
 
     cantos_finais_px = np.int32([pontos_com_padding])
 
-    if comp["ref"] == "R1":
-        esta_presente, score = verificar_presenca_componente(img_copy, cantos_finais_px)
-        color = (0,255,0) if esta_presente else (0,0,255)
 
-    else: 
-        color = (0,255,0)
+    esta_presente, score = verificar_presenca_componente_desvio_padrao_sem_reflexo(img_copy, cantos_finais_px)
+    color = (0,255,0) if esta_presente else (0,0,255)
+
 
     cv2.polylines(img, cantos_finais_px, isClosed=True, color=color, thickness=2)
 

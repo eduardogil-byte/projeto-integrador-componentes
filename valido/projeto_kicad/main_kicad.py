@@ -1,6 +1,7 @@
 # Sem os pontos nos imports!
 from utils.gerenciador_arquivos import descompactar_zip, buscar_arquivos_kicad, limpar_pasta_temporaria
 from core.extrator_cli import extrair_bom_csv
+from core.extrator_pcbnew import extrair_dados_geometria
 
 def run():
     # Facilita a leitura separar as variáveis
@@ -19,13 +20,20 @@ def run():
         print(f"   -> Esquemático encontrado: {caminho_sch}")
 
         print("3. Extraindo BOM com kicad-cli...")
-        lista_componentes = extrair_bom_csv(caminho_sch)
+        lista_componentes = extrair_bom_csv(caminho_pcb)
         
         # Mostra o resultado na tela para provar que funcionou
         print(f"\nSUCESSO! Foram encontrados {len(lista_componentes)} componentes.")
         print("Aqui estão os 5 primeiros:")
         for componente in lista_componentes[:5]:
             print(f" - {componente['ref']}: {componente['valor']}")
+
+        print("Testando o extrator_pcbnew")
+        dados_footprints = extrair_dados_geometria(caminho_pcb)
+        print("Mostrando 5 primeiros do extrator_pcbnew")
+        for dado in dados_footprints[:5]:
+            print(dado)
+
 
     except Exception as e:
         print(f"\nERRO: {e}")

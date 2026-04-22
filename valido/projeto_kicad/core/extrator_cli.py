@@ -2,17 +2,19 @@ import subprocess
 import csv
 import os
 
-def extrair_bom_csv(caminho_sch):
-    pasta_base = os.path.dirname(caminho_sch)
+def extrair_bom_csv(caminho_pcb):
+    pasta_base = os.path.dirname(caminho_pcb)
     caminho_csv = os.path.join(pasta_base, "bom_temp.csv")
 
     comando = [
-        "kicad-cli", 
-        "sch",
+        r"C:\Users\486973624\AppData\Local\Programs\KiCad\9.0\bin\kicad-cli.exe", 
+        "pcb",
         "export",
-        "bom", 
+        "pos",
+        "--format", "csv",
+        "--units", "mm",
         "--output", caminho_csv,
-        caminho_sch
+        caminho_pcb
     ]
 
 
@@ -25,13 +27,16 @@ def extrair_bom_csv(caminho_sch):
             leitor = csv.DictReader(arquivo_csv)
 
             for linha in leitor:
-                ref = linha.get('Reference', '').strip()
-                val = linha.get('Value', '').strip()
+                ref = linha.get('Ref', '').strip()
+                val = linha.get('Val', '').strip()
 
                 if ref:
                     componentes.append({
                         'ref': ref,
                         'valor': val,
+                        'posX': linha.get('PosX'),
+                        'posY': linha.get('PosY'),
+                        'lado': linha.get('Side'),
                         'dados_extras': linha
                     })
         

@@ -1,7 +1,7 @@
 # Sem os pontos nos imports!
 from utils.gerenciador_arquivos import descompactar_zip, buscar_arquivos_kicad, limpar_pasta_temporaria
 from core.extrator_cli import extrair_bom_csv
-from core.extrator_pcbnew import extrair_dados_geometria
+from core.extrator_pcbnew import extrair_dados_geometria, salvar_geometria_csv
 
 def run():
     # Facilita a leitura separar as variáveis
@@ -34,6 +34,9 @@ def run():
         for dado in dados_footprints[:5]:
             print(dado)
 
+        limpar_pasta_temporaria(pasta_temp)
+
+        salvar_geometria_csv(dados_footprints, "C:/Users/486973624/Documents/aulas/git clone projeto v8.4/projeto-integrador-componentes/valido/projeto_kicad/output/bom_footprints.csv")
 
     except Exception as e:
         print(f"\nERRO: {e}")

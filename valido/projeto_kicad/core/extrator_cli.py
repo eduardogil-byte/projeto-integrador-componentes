@@ -4,7 +4,8 @@ import os
 
 def extrair_bom_csv(caminho_pcb):
     pasta_base = os.path.dirname(caminho_pcb)
-    caminho_csv = os.path.join(pasta_base, "bom_temp.csv")
+    caminho = "C:/Users/486973624/Documents/aulas/git clone projeto v8.4/projeto-integrador-componentes/valido/projeto_kicad/output"
+    caminho_csv = os.path.join(caminho, "bom_temp.csv")
 
     comando = [
         r"C:\Users\486973624\AppData\Local\Programs\KiCad\9.0\bin\kicad-cli.exe", 

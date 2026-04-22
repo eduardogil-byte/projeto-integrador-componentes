@@ -47,8 +47,9 @@ def desenhar_caixa_aproximada(
 
 
 
-def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px=12):
-    w_mm, h_mm = obter_tamanho_package_mm(comp["package"])
+def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px=0):
+    w_mm = comp["w_mm"]
+    h_mm = comp["h_mm"]
     x_mm = comp["x_mm"]
     y_mm = comp["y_mm"]
     rot = comp["rot"]
@@ -56,8 +57,8 @@ def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px
     img_copy = img.copy()
 
     if abs(rot) % 180 == 90:
-        w_mm, h_mm = h_mm, w_mm
-
+        w_mm = h_mm
+        h_mm = w_mm
 
     cantos_mm = np.float32([[
         [x_mm - w_mm / 2, y_mm - h_mm / 2],
@@ -66,15 +67,7 @@ def desenhar_caixa_aproximada_matriz(img, comp, matriz_transformacao, padding_px
         [x_mm - w_mm / 2, y_mm + h_mm / 2]
     ]])
 
-
     cantos_px = cv2.perspectiveTransform(cantos_mm, matriz_transformacao)
-    
-    # cantos_px = np.int32(cantos_px)
-    # print(cantos_px)
-
-    # cv2.polylines(img, [cantos_px], isClosed=True, color=(0, 255, 0), thickness=2)
-
-    # nova logica para colocar padding
     pontos = cantos_px[0]
 
     centro_px = np.mean(pontos, axis=0)

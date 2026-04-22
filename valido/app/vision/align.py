@@ -28,8 +28,8 @@ def align(img):
     cv2.destroyAllWindows()
     return pontos_foto
 
-
-def align_auto(img):
+# apagar tudo para baixo
+""" def align_auto(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     gray = cv2.medianBlur(gray, 7)
@@ -283,4 +283,4 @@ def align_todos_circulos(img):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    return candidates
+    return candidates """

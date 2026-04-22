@@ -1,12 +1,12 @@
 import os
 import cv2
 import numpy as np
-from app.kicad.parser import carregar_componentes, carregar_pontos_parafusos, ordernar_pontos
-from app.geometry.mm_to_pixel import mm_para_pixel_perspectiva
-from app.vision.io import carregar_imagem
-from app.debug.draw import desenhar_ponto_e_label, desenhar_caixa_aproximada_matriz
+from app.parser import carregar_componentes, carregar_pontos_parafusos, ordernar_pontos
+from app.mm_to_pixel import mm_para_pixel_perspectiva
+from app.align import carregar_imagem
+from app.draw import desenhar_ponto_e_label, desenhar_caixa_aproximada_matriz
 
-from app.vision.align import align
+from app.align import align
 
 def run_overlay_referencia(
     caminho_img: str,

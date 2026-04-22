@@ -1,7 +1,7 @@
 # Sem os pontos nos imports!
-from utils.gerenciador_arquivos import descompactar_zip, buscar_arquivos_kicad, limpar_pasta_temporaria
-from core.extrator_cli import extrair_bom_csv
-from core.extrator_pcbnew import extrair_dados_geometria, salvar_geometria_csv
+from gerenciador_arquivos import descompactar_zip, buscar_arquivos_kicad, limpar_pasta_temporaria
+from extrator_cli import extrair_bom_csv, extrair_dados_geometria, salvar_geometria_csv
+
 
 def run():
     # Facilita a leitura separar as variáveis

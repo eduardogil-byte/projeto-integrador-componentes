@@ -1,5 +1,5 @@
 # from app.core.pipeline import run_overlay_referencia
-from app.core.pipeline_2 import run_overlay_referencia
+from app.pipeline_2 import run_overlay_referencia
 
 if __name__ == "__main__":
     run_overlay_referencia(

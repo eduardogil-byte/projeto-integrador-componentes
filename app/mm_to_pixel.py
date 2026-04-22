@@ -2,12 +2,10 @@ from typing import List, Dict, Tuple
 import cv2
 import numpy as np
 
-
 def obter_limites(componentes: List[Dict]) -> Tuple[float, float, float, float]:
     xs = [c["x_mm"] for c in componentes]
     ys = [c["y_mm"] for c in componentes]
     return min(xs), max(xs), min(ys), max(ys)
-
 
 def calcular_escala(
     min_x: float,
@@ -32,7 +30,6 @@ def calcular_escala(
 
     return min(escala_x, escala_y)
 
-
 def mm_para_pixel(
     x_mm: float,
     y_mm: float,
@@ -50,7 +47,6 @@ def mm_para_pixel(
     y_px = margem_px + (max_y - y_mm) * escala
 
     return int(round(x_px)), int(round(y_px))
-
 
 def mm_para_pixel_perspectiva(x_mm: float, y_mm: float, matriz_transformacao) -> tuple[int,int]:
     pontos_mm = np.float32([[[x_mm,y_mm]]])

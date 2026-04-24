@@ -3,7 +3,7 @@ from app.pipeline_2 import run_overlay_referencia
 
 if __name__ == "__main__":
     run_overlay_referencia(
-        caminho_img="./data/arduino_uno_r3_smd_teste_falta.jpeg",
-        caminho_csv="./projeto_kicad/output/bom_footprints.csv",
+        caminho_img="./data/arduino.jpeg",
+        caminho_csv="./data/top.csv",
         caminho_saida="./output/overlay_ref2.png",
     )

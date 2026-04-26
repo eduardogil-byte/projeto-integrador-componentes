@@ -8,7 +8,7 @@
 #     )
 
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
@@ -31,12 +31,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+PASTA_CSVS = "./data/csvs"
+
 # Garante que as pastas existam
 os.makedirs("./data", exist_ok=True)
 os.makedirs("./output", exist_ok=True)
+os.makedirs(PASTA_CSVS, exist_ok=True)
+
+@app.get("/projetos-csv/")
+async def listar_csvs():
+    """
+    Lê a pasta de CSVs e retorna uma lista com os nomes dos arquivos.
+    """
+    try:
+        # Lista apenas os arquivos que terminam com '.csv'
+        arquivos = [f for f in os.listdir(PASTA_CSVS) if f.endswith('.csv')]
+        return {"csvs": arquivos}
+    except Exception as e:
+        return {"erro": f"Falha ao listar CSVs: {str(e)}"}
+
 
 @app.post("/inspecionar-placa/")
-async def inspecionar_placa(imagem: UploadFile = File(...)):
+async def inspecionar_placa(imagem: UploadFile = File(...), projeto_csv: str = Form(...)):
     """
     Recebe a foto de uma placa, processa o alinhamento 
     e devolve a imagem com as marcações dos componentes.
@@ -48,7 +64,11 @@ async def inspecionar_placa(imagem: UploadFile = File(...)):
         shutil.copyfileobj(imagem.file, buffer)
         
     # 2. Definir caminhos do gabarito e da saída
-    caminho_csv = "./data/bom_footprints.csv"  # O seu CSV gabarito
+    caminho_csv = os.path.join(PASTA_CSVS, projeto_csv)
+
+    if not os.path.exists(caminho_csv):
+        return {"erro": f"O arquivo de gabarito '{projeto_csv}' não foi encontrado no servidor."}
+
     nome_saida = f"{uuid.uuid4()}.png"
     caminho_saida = f"./output/{nome_saida}"
     

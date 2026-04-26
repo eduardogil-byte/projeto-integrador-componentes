@@ -3,209 +3,540 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inspeção AOI - KiCad</title>
+    <title>AOI - Inspeção de Placas</title>
     <style>
+      /* Variáveis de cor e fontes */
+      :root {
+        --bg-main: #1e1e2f;
+        --bg-card: #2a2a40;
+        --primary: #4caf50;
+        --primary-hover: #45a049;
+        --text-light: #ffffff;
+        --text-muted: #aaaaaa;
+        --danger: #f44336;
+      }
+
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #1e1e2f;
-        color: #fff;
+        background-color: var(--bg-main);
+        color: var(--text-light);
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1100px;
+        background: var(--bg-card);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Área do Logo */
+      .logo-area {
         text-align: center;
         padding: 20px;
-        margin: 0;
-      }
-      .container {
-        max-width: 1000px;
-        margin: auto;
-        background: #2a2a40;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-      }
-      h1 {
-        color: #4caf50;
-        margin-top: 0;
-      }
-      .upload-area {
-        margin: 20px 0;
-        padding: 30px;
-        border: 2px dashed #4caf50;
-        border-radius: 10px;
-        background-color: #222236;
-      }
-      input[type="file"] {
         margin-bottom: 20px;
+        border: 2px dashed var(--text-muted);
+        border-radius: 8px;
+        color: var(--text-muted);
+        font-weight: bold;
+        font-size: 1.2em;
+      }
+
+      /* Controles (Seleção de CSV, Botões de Imagem) */
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .row {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+      }
+
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+
+      label {
+        font-size: 0.9em;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+      }
+
+      select,
+      input[type="text"],
+      input[type="file"] {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #555;
+        background-color: #222236;
         color: white;
         font-size: 16px;
       }
+
       button {
-        background-color: #4caf50;
+        background-color: var(--primary);
         color: white;
         border: none;
-        padding: 12px 25px;
+        padding: 10px 20px;
         font-size: 16px;
         font-weight: bold;
         border-radius: 5px;
         cursor: pointer;
-        transition: 0.3s;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
+
       button:hover {
-        background-color: #45a049;
+        background-color: var(--primary-hover);
       }
-      button:disabled {
-        background-color: #666;
-        cursor: not-allowed;
+
+      .btn-icon {
+        padding: 10px 15px;
+        font-size: 20px;
       }
+
+      .btn-full {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1em;
+        margin-bottom: 30px;
+      }
+
+      /* Área das Imagens */
       .images-container {
         display: flex;
-        justify-content: space-between;
-        margin-top: 30px;
         gap: 20px;
       }
+
       .image-box {
         flex: 1;
-        text-align: center;
-        background: #222;
+        display: flex;
+        flex-direction: column;
+        background: #222236;
         padding: 15px;
         border-radius: 8px;
         border: 1px solid #444;
+        position: relative;
       }
-      .image-box h3 {
-        margin-top: 0;
-        color: #aaa;
-      }
-      .image-box img {
-        max-width: 100%;
-        border-radius: 5px;
-        min-height: 200px;
-        object-fit: contain;
-        background: #111;
-      }
-      #loading {
-        display: none;
-        color: #ffeb3b;
-        margin-top: 15px;
+
+      .image-box label {
         font-weight: bold;
+        color: var(--primary);
+        margin-bottom: 10px;
         font-size: 1.1em;
       }
-      #errorMessage {
-        display: none;
-        color: #f44336;
-        margin-top: 15px;
-        font-weight: bold;
-        background: rgba(244, 67, 54, 0.1);
-        padding: 10px;
+
+      .image-wrapper {
+        position: relative;
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #111;
         border-radius: 5px;
+        min-height: 300px;
+        overflow: hidden;
+      }
+
+      .image-wrapper img {
+        max-width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+      }
+
+      .btn-zoom {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 12px;
+        font-size: 14px;
+        border-radius: 5px;
+      }
+
+      /* Modais (Telas Sobrepostas) */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: var(--bg-card);
+        padding: 30px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        position: relative;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 20px;
+        padding: 0;
+      }
+
+      /* Modal Camera Especifico */
+      #video-preview {
+        width: 100%;
+        border-radius: 8px;
+        background: #000;
+      }
+
+      /* Modal Zoom Imagem (Tela Cheia) */
+      #modal-zoom-img {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+      }
+
+      .btn-close-zoom {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        background: var(--danger);
+        font-size: 20px;
+        padding: 10px 15px;
+        border-radius: 50%;
+      }
+
+      /* Esconde o input file padrão para usar botão customizado */
+      #hidden-file-input {
+        display: none;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>🔬 Sistema de Inspeção Óptica (AOI)</h1>
-      <p>
-        Faça o upload da foto da placa para alinhar com o projeto e detectar os
-        componentes.
-      </p>
+      <div class="logo-area">[Espaço reservado para a Logo]</div>
 
-      <div class="upload-area">
-        <input type="file" id="fileInput" accept="image/jpeg, image/png" />
-        <br />
-        <button id="btnInspecionar">Inspecionar Placa</button>
-        <div id="loading">⏳ Processando imagem na API... Aguarde.</div>
-        <div id="errorMessage"></div>
+      <div class="control-group">
+        <div class="row">
+          <div class="field-group">
+            <label for="select-csv">Projeto Gabarito (CSV)</label>
+            <select id="select-csv">
+              <option value="">Carregando projetos da API...</option>
+              <option value="proj1">Placa_Arduino_v1.csv</option>
+              <option value="proj2">Placa_Raspberry_v2.csv</option>
+            </select>
+          </div>
+          <button
+            class="btn-icon"
+            id="btn-novo-projeto"
+            title="Adicionar Novo Projeto"
+          >
+            +
+          </button>
+        </div>
+
+        <div class="row">
+          <button id="btn-usar-camera" style="flex: 1">📷 Usar Câmera</button>
+          <button id="btn-importar-arquivo" style="flex: 1">
+            📂 Importar Arquivo
+          </button>
+          <input type="file" id="hidden-file-input" accept="image/*" />
+        </div>
       </div>
+
+      <button id="btn-inspecionar" class="btn-full">🔍 Inspecionar</button>
+      <p
+        id="loading-msg"
+        style="display: none; text-align: center; color: #ffeb3b"
+      >
+        Processando...
+      </p>
 
       <div class="images-container">
         <div class="image-box">
-          <h3>Original</h3>
-          <img id="imgOriginal" src="" alt="A imagem original aparecerá aqui" />
+          <label>Foto Enviada:</label>
+          <div class="image-wrapper">
+            <img id="img-enviada" src="" alt="Nenhuma imagem" />
+            <button class="btn-zoom" onclick="abrirZoom('img-enviada')">
+              ⛶ Ampliar
+            </button>
+          </div>
         </div>
+
         <div class="image-box">
-          <h3>Processada (AOI)</h3>
-          <img id="imgProcessada" src="" alt="O resultado aparecerá aqui" />
+          <label>Resultado:</label>
+          <div class="image-wrapper">
+            <img id="img-resultado" src="" alt="Aguardando inspeção" />
+            <button class="btn-zoom" onclick="abrirZoom('img-resultado')">
+              ⛶ Ampliar
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
+    <div id="modal-projeto" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" onclick="fecharModal('modal-projeto')">
+          ✖
+        </button>
+        <h2 style="margin-top: 0">Novo Projeto</h2>
+
+        <div class="field-group">
+          <label>Coloque um nome</label>
+          <input
+            type="text"
+            id="nome-projeto"
+            placeholder="Ex: Placa Fonte V3"
+          />
+        </div>
+
+        <div class="field-group">
+          <label>Importe um arquivo .zip do projeto ou .kicad_pcb</label>
+          <input type="file" id="arquivo-projeto" accept=".zip,.kicad_pcb" />
+        </div>
+
+        <button onclick="salvarProjeto()">Salvar Projeto</button>
+      </div>
+    </div>
+
+    <div id="modal-camera" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" onclick="fecharCamera()">✖</button>
+        <h2 style="margin-top: 0">Tirar Foto da Placa</h2>
+        <video id="video-preview" autoplay playsinline></video>
+        <canvas id="canvas-capture" style="display: none"></canvas>
+        <button onclick="capturarFoto()">📸 Capturar</button>
+      </div>
+    </div>
+
+    <div
+      id="modal-zoom"
+      class="modal-overlay"
+      style="background: rgba(0, 0, 0, 0.95)"
+    >
+      <button class="btn-close-zoom" onclick="fecharModal('modal-zoom')">
+        ✖
+      </button>
+      <img id="modal-zoom-img" src="" alt="Zoom" />
+    </div>
+
     <script>
-      const fileInput = document.getElementById("fileInput");
-      const btnInspecionar = document.getElementById("btnInspecionar");
-      const imgOriginal = document.getElementById("imgOriginal");
-      const imgProcessada = document.getElementById("imgProcessada");
-      const loading = document.getElementById("loading");
-      const errorMessage = document.getElementById("errorMessage");
+      // Variável global para guardar a imagem atual (em Blob ou File)
+      let imagemParaEnvio = null;
 
-      // Mostra a imagem original assim que o usuário seleciona o arquivo
-      fileInput.addEventListener("change", function () {
-        if (this.files && this.files[0]) {
-          imgOriginal.src = URL.createObjectURL(this.files[0]);
-          imgProcessada.src = ""; // Limpa a imagem processada anterior
-          imgProcessada.alt = "Aguardando processamento...";
-          errorMessage.style.display = "none";
-        }
-      });
+      // const api_url = "http://127.0.0.1:8000";
 
-      // Evento de clique no botão
-      btnInspecionar.addEventListener("click", async function () {
-        if (!fileInput.files[0]) {
-          showError("Por favor, selecione uma imagem primeiro!");
-          return;
-        }
+      // Elementos UI
+      const imgEnviada = document.getElementById("img-enviada");
+      const imgResultado = document.getElementById("img-resultado");
+      const hiddenFileInput = document.getElementById("hidden-file-input");
 
-        // Prepara os dados para envio
-        const formData = new FormData();
-        formData.append("imagem", fileInput.files[0]);
-
-        // Atualiza a interface para estado de carregamento
-        loading.style.display = "block";
-        errorMessage.style.display = "none";
-        btnInspecionar.disabled = true;
-        imgProcessada.src = "";
-        imgProcessada.alt = "Processando...";
+      // --- Carregar Lista de CSVs da API ---
+      async function carregarCSVs() {
+        const select = document.getElementById("select-csv");
 
         try {
-          // Chama a API FastAPI
-          const response = await fetch(
-            "http://127.0.0.1:8000/inspecionar-placa/",
-            {
-              method: "POST",
-              body: formData,
-            },
-          );
-
-          if (!response.ok) {
-            throw new Error(`Erro no servidor HTTP: ${response.status}`);
-          }
+          const response = await fetch("http://127.0.0.1:8000/projetos-csv/");
+          if (!response.ok) throw new Error("Erro na rede");
 
           const data = await response.json();
 
-          // Verifica se a API retornou um erro interno tratado
+          // Limpa as opções falsas que estavam lá
+          select.innerHTML = "";
+
           if (data.erro) {
-            throw new Error(data.erro);
+            select.innerHTML = `<option value="">Erro: ${data.erro}</option>`;
+            return;
           }
 
-          // O truque do Cache Buster: adiciona a data atual no final da URL
-          // Isso força o navegador a baixar a imagem nova e ignora o cache antigo (Erro 304)
-          const timestamp = new Date().getTime();
-          imgProcessada.src = data.url + "?t=" + timestamp;
-          imgProcessada.alt = "Imagem processada com sucesso!";
+          if (data.csvs.length === 0) {
+            select.innerHTML = `<option value="">Nenhum CSV encontrado na pasta ./data/csvs</option>`;
+            return;
+          }
+
+          // Cria uma option para cada CSV encontrado
+          data.csvs.forEach((csv) => {
+            const option = document.createElement("option");
+            option.value = csv;
+            option.textContent = csv; // Mostra o nome do arquivo na tela
+            select.appendChild(option);
+          });
         } catch (error) {
-          console.error("Erro na inspeção:", error);
-          showError(
-            `Falha na inspeção: ${error.message}. Verifique se o servidor FastAPI está rodando.`,
-          );
-          imgProcessada.alt = "Erro ao carregar o resultado.";
-        } finally {
-          // Restaura a interface
-          loading.style.display = "none";
-          btnInspecionar.disabled = false;
+          console.error("Erro ao carregar CSVs:", error);
+          select.innerHTML = `<option value="">Falha ao carregar projetos. API rodando?</option>`;
+        }
+      }
+
+      // Executa a função assim que a página terminar de carregar
+      window.addEventListener("DOMContentLoaded", carregarCSVs);
+
+      // --- Funções de Controle de Modal ---
+      function abrirModal(id) {
+        document.getElementById(id).style.display = "flex";
+      }
+      function fecharModal(id) {
+        document.getElementById(id).style.display = "none";
+      }
+
+      // --- Modal Novo Projeto ---
+      document
+        .getElementById("btn-novo-projeto")
+        .addEventListener("click", () => abrirModal("modal-projeto"));
+      function salvarProjeto() {
+        // Lógica futura para enviar o ZIP/Kicad para o FastAPI
+        alert("Preparado para enviar o projeto para a API!");
+        fecharModal("modal-projeto");
+      }
+
+      // --- Importar Arquivo ---
+      document
+        .getElementById("btn-importar-arquivo")
+        .addEventListener("click", () => {
+          hiddenFileInput.click();
+        });
+
+      hiddenFileInput.addEventListener("change", function () {
+        if (this.files && this.files[0]) {
+          imagemParaEnvio = this.files[0];
+          imgEnviada.src = URL.createObjectURL(imagemParaEnvio);
+          imgResultado.src = ""; // Reseta resultado
         }
       });
 
-      // Função auxiliar para mostrar erros na tela
-      function showError(msg) {
-        errorMessage.textContent = msg;
-        errorMessage.style.display = "block";
+      // --- Câmera ---
+      let videoStream = null;
+      document
+        .getElementById("btn-usar-camera")
+        .addEventListener("click", async () => {
+          abrirModal("modal-camera");
+          try {
+            videoStream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: "environment" },
+            });
+            document.getElementById("video-preview").srcObject = videoStream;
+          } catch (err) {
+            alert("Erro ao acessar a câmera: " + err);
+            fecharCamera();
+          }
+        });
+
+      function fecharCamera() {
+        fecharModal("modal-camera");
+        if (videoStream) {
+          videoStream.getTracks().forEach((track) => track.stop());
+        }
       }
+
+      function capturarFoto() {
+        const video = document.getElementById("video-preview");
+        const canvas = document.getElementById("canvas-capture");
+
+        // Ajusta o tamanho do canvas para o tamanho do vídeo
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Desenha a imagem no canvas
+        canvas
+          .getContext("2d")
+          .drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Converte pra arquivo e exibe na tela principal
+        canvas.toBlob((blob) => {
+          imagemParaEnvio = blob;
+          // Adicionando extensão para o FastAPI aceitar
+          imagemParaEnvio.name = "camera_capture.jpg";
+          imgEnviada.src = URL.createObjectURL(blob);
+          imgResultado.src = ""; // Reseta resultado
+          fecharCamera();
+        }, "image/jpeg");
+      }
+
+      // --- Zoom Imagens ---
+      function abrirZoom(imgId) {
+        const imgSrc = document.getElementById(imgId).src;
+        if (
+          !imgSrc ||
+          (imgSrc.includes(window.location.host) && imgSrc.endsWith("/"))
+        ) {
+          alert("Nenhuma imagem para ampliar!");
+          return;
+        }
+        document.getElementById("modal-zoom-img").src = imgSrc;
+        abrirModal("modal-zoom");
+      }
+
+      // --- Inspeção (Enviar para FastAPI) ---
+      document
+        .getElementById("btn-inspecionar")
+        .addEventListener("click", async () => {
+          if (!imagemParaEnvio) {
+            alert("Por favor, importe um arquivo ou tire uma foto primeiro.");
+            return;
+          }
+
+          const projetoSelecionado =
+            document.getElementById("select-csv").value;
+
+          // Trava de segurança no frontend
+          if (!projetoSelecionado) {
+            alert("Por favor, selecione um projeto (CSV) válido.");
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("imagem", imagemParaEnvio, "imagem_placa.jpg");
+          formData.append("projeto_csv", projetoSelecionado);
+
+          document.getElementById("loading-msg").style.display = "block";
+          imgResultado.src = "";
+
+          try {
+            // DESCOMENTAR QUANDO FOR LIGAR NA API:
+
+            const response = await fetch(
+              "http://127.0.0.1:8000/inspecionar-placa/",
+              {
+                method: "POST",
+                body: formData,
+              },
+            );
+
+            if (!response.ok) throw new Error("Erro na comunicação com a API");
+            const data = await response.json();
+
+            if (data.erro) throw new Error(data.erro);
+            imgResultado.src = data.url + "?t=" + new Date().getTime();
+          } catch (error) {
+            alert("Erro: " + error.message);
+          } finally {
+            document.getElementById("loading-msg").style.display = "none";
+          }
+        });
     </script>
   </body>
 </html>

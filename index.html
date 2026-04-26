@@ -11,6 +11,7 @@
         color: #fff;
         text-align: center;
         padding: 20px;
+        margin: 0;
       }
       .container {
         max-width: 1000px;
@@ -22,29 +23,37 @@
       }
       h1 {
         color: #4caf50;
+        margin-top: 0;
       }
       .upload-area {
         margin: 20px 0;
-        padding: 20px;
+        padding: 30px;
         border: 2px dashed #4caf50;
         border-radius: 10px;
+        background-color: #222236;
       }
       input[type="file"] {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         color: white;
+        font-size: 16px;
       }
       button {
         background-color: #4caf50;
         color: white;
         border: none;
-        padding: 10px 20px;
+        padding: 12px 25px;
         font-size: 16px;
+        font-weight: bold;
         border-radius: 5px;
         cursor: pointer;
         transition: 0.3s;
       }
       button:hover {
         background-color: #45a049;
+      }
+      button:disabled {
+        background-color: #666;
+        cursor: not-allowed;
       }
       .images-container {
         display: flex;
@@ -55,76 +64,106 @@
       .image-box {
         flex: 1;
         text-align: center;
+        background: #222;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #444;
+      }
+      .image-box h3 {
+        margin-top: 0;
+        color: #aaa;
       }
       .image-box img {
         max-width: 100%;
         border-radius: 5px;
-        border: 1px solid #444;
         min-height: 200px;
-        background: #222;
+        object-fit: contain;
+        background: #111;
       }
       #loading {
         display: none;
         color: #ffeb3b;
         margin-top: 15px;
         font-weight: bold;
+        font-size: 1.1em;
+      }
+      #errorMessage {
+        display: none;
+        color: #f44336;
+        margin-top: 15px;
+        font-weight: bold;
+        background: rgba(244, 67, 54, 0.1);
+        padding: 10px;
+        border-radius: 5px;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>🔬 Sistema de Inspeção Óptica (AOI)</h1>
-      <p>Faça o upload da foto da placa para alinhar com o projeto do KiCad.</p>
+      <p>
+        Faça o upload da foto da placa para alinhar com o projeto e detectar os
+        componentes.
+      </p>
 
       <div class="upload-area">
         <input type="file" id="fileInput" accept="image/jpeg, image/png" />
         <br />
-        <button type="button" onclick="inspecionarPlaca()">
-          Inspecionar Placa
-        </button>
-        <div id="loading">Processando na API... Aguarde ⚙️</div>
+        <button id="btnInspecionar">Inspecionar Placa</button>
+        <div id="loading">⏳ Processando imagem na API... Aguarde.</div>
+        <div id="errorMessage"></div>
       </div>
 
       <div class="images-container">
         <div class="image-box">
           <h3>Original</h3>
-          <img id="imgOriginal" src="" alt="Imagem original aparecerá aqui" />
+          <img id="imgOriginal" src="" alt="A imagem original aparecerá aqui" />
         </div>
         <div class="image-box">
-          <h3>Processada (Com Overlays)</h3>
-          <img id="imgProcessada" src="" alt="Resultado aparecerá aqui" />
+          <h3>Processada (AOI)</h3>
+          <img id="imgProcessada" src="" alt="O resultado aparecerá aqui" />
         </div>
       </div>
     </div>
 
     <script>
       const fileInput = document.getElementById("fileInput");
+      const btnInspecionar = document.getElementById("btnInspecionar");
       const imgOriginal = document.getElementById("imgOriginal");
       const imgProcessada = document.getElementById("imgProcessada");
       const loading = document.getElementById("loading");
+      const errorMessage = document.getElementById("errorMessage");
 
-      // Mostra a imagem original assim que selecionada
+      // Mostra a imagem original assim que o usuário seleciona o arquivo
       fileInput.addEventListener("change", function () {
         if (this.files && this.files[0]) {
           imgOriginal.src = URL.createObjectURL(this.files[0]);
-          imgProcessada.src = ""; // Limpa a anterior
+          imgProcessada.src = ""; // Limpa a imagem processada anterior
+          imgProcessada.alt = "Aguardando processamento...";
+          errorMessage.style.display = "none";
         }
       });
 
-      async function inspecionarPlaca(e) {
-        if (e) e.preventDefault();
+      // Evento de clique no botão
+      btnInspecionar.addEventListener("click", async function () {
         if (!fileInput.files[0]) {
-          alert("Por favor, selecione uma imagem primeiro!");
+          showError("Por favor, selecione uma imagem primeiro!");
           return;
         }
 
+        // Prepara os dados para envio
         const formData = new FormData();
         formData.append("imagem", fileInput.files[0]);
 
-        loading.style.display = "block"; // Mostra o aviso de carregando
+        // Atualiza a interface para estado de carregamento
+        loading.style.display = "block";
+        errorMessage.style.display = "none";
+        btnInspecionar.disabled = true;
+        imgProcessada.src = "";
+        imgProcessada.alt = "Processando...";
 
         try {
-          // Chama a sua API FastAPI
+          // Chama a API FastAPI
           const response = await fetch(
             "http://127.0.0.1:8000/inspecionar-placa/",
             {
@@ -133,19 +172,39 @@
             },
           );
 
-          if (!response.ok) throw new Error("Erro ao processar na API");
+          if (!response.ok) {
+            throw new Error(`Erro no servidor HTTP: ${response.status}`);
+          }
 
-          // Transforma a resposta em um arquivo de imagem (Blob)
-          const blob = await response.blob();
-          imgProcessada.src = URL.createObjectURL(blob);
+          const data = await response.json();
+
+          // Verifica se a API retornou um erro interno tratado
+          if (data.erro) {
+            throw new Error(data.erro);
+          }
+
+          // O truque do Cache Buster: adiciona a data atual no final da URL
+          // Isso força o navegador a baixar a imagem nova e ignora o cache antigo (Erro 304)
+          const timestamp = new Date().getTime();
+          imgProcessada.src = data.url + "?t=" + timestamp;
+          imgProcessada.alt = "Imagem processada com sucesso!";
         } catch (error) {
-          console.error(error);
-          alert(
-            "Falha na comunicação com a API. O servidor FastAPI está rodando?",
+          console.error("Erro na inspeção:", error);
+          showError(
+            `Falha na inspeção: ${error.message}. Verifique se o servidor FastAPI está rodando.`,
           );
+          imgProcessada.alt = "Erro ao carregar o resultado.";
         } finally {
-          loading.style.display = "none"; // Esconde o aviso de carregando
+          // Restaura a interface
+          loading.style.display = "none";
+          btnInspecionar.disabled = false;
         }
+      });
+
+      // Função auxiliar para mostrar erros na tela
+      function showError(msg) {
+        errorMessage.textContent = msg;
+        errorMessage.style.display = "block";
       }
     </script>
   </body>

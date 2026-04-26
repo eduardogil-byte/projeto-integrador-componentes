@@ -13,10 +13,15 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
+import uuid
 from app.pipeline_2 import run_overlay_referencia
 
 # Inicializa o aplicativo FastAPI
 app = FastAPI(title="API de Inspeção AOI", version="1.0")
+
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/output", StaticFiles(directory="output"), name="output")
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,7 +49,8 @@ async def inspecionar_placa(imagem: UploadFile = File(...)):
         
     # 2. Definir caminhos do gabarito e da saída
     caminho_csv = "./data/bom_footprints.csv"  # O seu CSV gabarito
-    caminho_saida = f"./output/processada_{imagem.filename}"
+    nome_saida = f"{uuid.uuid4()}.png"
+    caminho_saida = f"./output/{nome_saida}"
     
     try:
         # 3. Rodar o seu pipeline! A mágica acontece aqui.
@@ -54,8 +60,11 @@ async def inspecionar_placa(imagem: UploadFile = File(...)):
             caminho_saida=caminho_saida
         )
         
+
+        # print("Arquivo \existe?", os.path.exists(caminho_saida))
+
         # 4. Retornar a imagem final para quem fez a requisição
-        return FileResponse(caminho_saida, media_type="image/jpeg")
+        return {"url": caminho_saida.replace("./", "http://127.0.0.1:8000/")}
         
     except Exception as e:
         return {"erro": f"Falha ao processar a imagem: {str(e)}"}

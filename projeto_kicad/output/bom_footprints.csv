@@ -1,4 +1,4 @@
-﻿ref,package,pos_x,pos_y,largura_mm,altura_mm,rotacao,lado
+﻿Ref,Package,PosX,PosY,width_mm,height_mm,Rot,Side
 C11,C0603-ROUND,195.895,53.209,2.9968,2.0168,0.0,top
 TP_USH0,TP-SP,123.2281,88.8746,0.8,0.8,0.0,top
 TP_5V1,TP-SP,180.3781,101.1936,0.8,0.8,0.0,top

@@ -82,17 +82,17 @@ def carregar_componentes(caminho_csv: str) -> List[Dict]:
                 continue
 
             try:
-                package = row["Package"].strip().replace('"', "")
-                w_mm, h_mm = PACKAGE_SIZES_MM.get(package, (2.0, 2.0))
+                # package = row["Package"].strip().replace('"', "")
+                # w_mm, h_mm = PACKAGE_SIZES_MM.get(package, (2.0, 2.0))
+
 
                 comp = {
                     "ref": row["Ref"].strip().replace('"', ""),
-                    "val": row["Val"].strip().replace('"', ""),
-                    "package": package,
+                    "package": row["Package"].strip().replace('"', ""),
                     "x_mm": float(row["PosX"]),
                     "y_mm": float(row["PosY"]),
-                    "w_mm": w_mm,
-                    "h_mm": h_mm,
+                    "w_mm": float(row["width_mm"]),
+                    "h_mm": float(row["height_mm"]),
                     "rot": float(row["Rot"]),
                     "side": row["Side"].strip().lower().replace('"', ""),
                 }

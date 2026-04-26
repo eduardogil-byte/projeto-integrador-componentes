@@ -5,7 +5,7 @@ import os
 
 def extrair_bom_csv(caminho_pcb):
     pasta_base = os.path.dirname(caminho_pcb)
-    caminho = "C:/Users/486973624/Documents/aulas/git clone projeto v8.4/projeto-integrador-componentes/valido/projeto_kicad/output"
+    caminho = "projeto_kicad/output"
     caminho_csv = os.path.join(caminho, "bom_temp.csv")
 
     comando = [
@@ -71,7 +71,7 @@ def extrair_dados_geometria(caminho_pcb):
 
         pos = footprint.GetPosition()
         pos_x = pos.x / 1000000.0
-        pos_y = pos.y / 1000000.0
+        pos_y = -(pos.y / 1000000.0)
 
         # Rotação e Lado
         rotacao = footprint.GetOrientationDegrees()
@@ -79,27 +79,46 @@ def extrair_dados_geometria(caminho_pcb):
 
         package = str(footprint.GetFPID().GetLibItemName())
 
-        # 3. A MÁGICA: Obtendo o tamanho real (Bounding Box)
-        # O Bounding Box engloba todo o desenho do footprint (pads, silk, courtyard)
-        bbox = footprint.GetBoundingBox()
-        largura = bbox.GetWidth() / 1000000.0
-        altura = bbox.GetHeight() / 1000000.0
+        # 3. A NOVA MÁGICA: Obtendo o tamanho APENAS pelos Pads (Ilhas de solda)
+        # Isso ignora os textos que deixavam as caixas gigantes.
+        pads = footprint.Pads()
+        
+        if pads:
+            # Pega as medidas do primeiro pad como ponto de partida
+            primeiro_pad_bbox = pads[0].GetBoundingBox()
+            min_x = primeiro_pad_bbox.GetLeft()
+            max_x = primeiro_pad_bbox.GetRight()
+            min_y = primeiro_pad_bbox.GetTop()
+            max_y = primeiro_pad_bbox.GetBottom()
+            
+            # Itera sobre os outros pads para expandir a caixa apenas se necessário
+            for pad in pads[1:]:
+                p_bbox = pad.GetBoundingBox()
+                min_x = min(min_x, p_bbox.GetLeft())
+                max_x = max(max_x, p_bbox.GetRight())
+                min_y = min(min_y, p_bbox.GetTop())
+                max_y = max(max_y, p_bbox.GetBottom())
+                
+            largura = (max_x - min_x) / 1000000.0
+            altura = (max_y - min_y) / 1000000.0
+        else:
+            # Fallback: Se a peça não tiver pads, usa a caixa inteira
+            bbox = footprint.GetBoundingBox()
+            largura = bbox.GetWidth() / 1000000.0
+            altura = bbox.GetHeight() / 1000000.0
 
         dados_footprints.append({
-            'ref': ref,
-            "package": package,
-            'pos_x': round(pos_x, 4),
-            'pos_y': round(pos_y, 4),
-            'largura_mm': round(largura, 4),
-            'altura_mm': round(altura, 4),
-            'rotacao': rotacao,
-            'lado': lado
+            'Ref': ref,
+            "Package": package,
+            'PosX': round(pos_x, 4),
+            'PosY': round(pos_y, 4),
+            'width_mm': round(largura, 4),
+            'height_mm': round(altura, 4),
+            'Rot': rotacao,
+            'Side': lado
         })
 
     return dados_footprints
-
-
-import csv
 
 def salvar_geometria_csv(dados, caminho_saida):
     """

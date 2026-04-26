@@ -19,7 +19,9 @@ def buscar_arquivos_kicad(pasta_extraida):
         if arquivo.suffix == '.kicad_sch':
             caminho_sch = str(arquivo)
         elif arquivo.suffix == '.kicad_pcb':
-            caminho_pcb = str(arquivo)
+            novo_caminho = f"./data/{arquivo.name}"
+            shutil.move(str(arquivo), str(novo_caminho))
+            caminho_pcb = str(novo_caminho)
 
     if not caminho_sch or not caminho_pcb:
         raise FileNotFoundError("Erro: O arquivo .zip deve conter pelo menos um .kicad_sch e um .kicad_pcb.")

@@ -5,8 +5,8 @@ from extrator_cli import extrair_bom_csv, extrair_dados_geometria, salvar_geomet
 
 def run():
     # Facilita a leitura separar as variáveis
-    arquivo_zip = "projeto-integrador-componentes/valido/projeto_kicad/A000073-cad-files.zip"
-    pasta_temp = "projeto-integrador-componentes/valido/projeto_kicad/temp_uploads"
+    arquivo_zip = "./projeto_kicad/A000073-cad-files.zip"
+    pasta_temp = "./projeto_kicad/temp_uploads"
 
     try:
         print("1. Descompactando o ZIP...")
@@ -20,13 +20,13 @@ def run():
         print(f"   -> Esquemático encontrado: {caminho_sch}")
 
         print("3. Extraindo BOM com kicad-cli...")
-        lista_componentes = extrair_bom_csv(caminho_pcb)
+        # lista_componentes = extrair_bom_csv(caminho_pcb)
         
         # Mostra o resultado na tela para provar que funcionou
-        print(f"\nSUCESSO! Foram encontrados {len(lista_componentes)} componentes.")
-        print("Aqui estão os 5 primeiros:")
-        for componente in lista_componentes[:5]:
-            print(f" - {componente['ref']}: {componente['valor']}")
+        # print(f"\nSUCESSO! Foram encontrados {len(lista_componentes)} componentes.")
+        # print("Aqui estão os 5 primeiros:")
+        # for componente in lista_componentes[:5]:
+        #     print(f" - {componente['ref']}: {componente['valor']}")
 
         print("Testando o extrator_pcbnew")
         dados_footprints = extrair_dados_geometria(caminho_pcb)
@@ -35,8 +35,8 @@ def run():
             print(dado)
 
         limpar_pasta_temporaria(pasta_temp)
-
-        salvar_geometria_csv(dados_footprints, "C:/Users/486973624/Documents/aulas/git clone projeto v8.4/projeto-integrador-componentes/valido/projeto_kicad/output/bom_footprints.csv")
+        
+        salvar_geometria_csv(dados_footprints, "./data/bom_footprints.csv")
 
     except Exception as e:
         print(f"\nERRO: {e}")

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inspeção AOI - KiCad</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #1e1e2f;
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1000px;
+        margin: auto;
+        background: #2a2a40;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      h1 {
+        color: #4caf50;
+      }
+      .upload-area {
+        margin: 20px 0;
+        padding: 20px;
+        border: 2px dashed #4caf50;
+        border-radius: 10px;
+      }
+      input[type="file"] {
+        margin-bottom: 15px;
+        color: white;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .images-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+        gap: 20px;
+      }
+      .image-box {
+        flex: 1;
+        text-align: center;
+      }
+      .image-box img {
+        max-width: 100%;
+        border-radius: 5px;
+        border: 1px solid #444;
+        min-height: 200px;
+        background: #222;
+      }
+      #loading {
+        display: none;
+        color: #ffeb3b;
+        margin-top: 15px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔬 Sistema de Inspeção Óptica (AOI)</h1>
+      <p>Faça o upload da foto da placa para alinhar com o projeto do KiCad.</p>
+
+      <div class="upload-area">
+        <input type="file" id="fileInput" accept="image/jpeg, image/png" />
+        <br />
+        <button type="button" onclick="inspecionarPlaca()">
+          Inspecionar Placa
+        </button>
+        <div id="loading">Processando na API... Aguarde ⚙️</div>
+      </div>
+
+      <div class="images-container">
+        <div class="image-box">
+          <h3>Original</h3>
+          <img id="imgOriginal" src="" alt="Imagem original aparecerá aqui" />
+        </div>
+        <div class="image-box">
+          <h3>Processada (Com Overlays)</h3>
+          <img id="imgProcessada" src="" alt="Resultado aparecerá aqui" />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById("fileInput");
+      const imgOriginal = document.getElementById("imgOriginal");
+      const imgProcessada = document.getElementById("imgProcessada");
+      const loading = document.getElementById("loading");
+
+      // Mostra a imagem original assim que selecionada
+      fileInput.addEventListener("change", function () {
+        if (this.files && this.files[0]) {
+          imgOriginal.src = URL.createObjectURL(this.files[0]);
+          imgProcessada.src = ""; // Limpa a anterior
+        }
+      });
+
+      async function inspecionarPlaca(e) {
+        if (e) e.preventDefault();
+        if (!fileInput.files[0]) {
+          alert("Por favor, selecione uma imagem primeiro!");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("imagem", fileInput.files[0]);
+
+        loading.style.display = "block"; // Mostra o aviso de carregando
+
+        try {
+          // Chama a sua API FastAPI
+          const response = await fetch(
+            "http://127.0.0.1:8000/inspecionar-placa/",
+            {
+              method: "POST",
+              body: formData,
+            },
+          );
+
+          if (!response.ok) throw new Error("Erro ao processar na API");
+
+          // Transforma a resposta em um arquivo de imagem (Blob)
+          const blob = await response.blob();
+          imgProcessada.src = URL.createObjectURL(blob);
+        } catch (error) {
+          console.error(error);
+          alert(
+            "Falha na comunicação com a API. O servidor FastAPI está rodando?",
+          );
+        } finally {
+          loading.style.display = "none"; // Esconde o aviso de carregando
+        }
+      }
+    </script>
+  </body>
+</html>

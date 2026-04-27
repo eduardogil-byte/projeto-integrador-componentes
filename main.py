@@ -74,7 +74,7 @@ async def novo_projeto(
         )
 
         return {"mensagem": f"Projeto processado com sucesso! O gabarito '{nome_csv_saida}' já está disponível."}
-
+ 
     except Exception as e:
         return {"erro": f"Falha ao gerar o projeto: {str(e)}"}
 

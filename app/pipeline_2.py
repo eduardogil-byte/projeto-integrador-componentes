@@ -25,12 +25,12 @@ def run_overlay_referencia(
     pontos_edge = carregar_edgecuts_pcb(caminho_pcb)
     pontos_csv_mm = extrair_bbox_edgecuts_para_csv_original(pontos_edge)
 
-    pontos_csv_mm = np.array([
-        [173.67, -29.46],  # Superior Esquerdo
-        [242.25, -29.46],  # Superior Direito
-        [242.25, -82.80],  # Inferior Direito
-        [173.67, -82.80]   # Inferior Esquerdo
-    ], dtype=np.float32)
+    # pontos_csv_mm = np.array([
+    #     [173.67, -29.46],  # Superior Esquerdo
+    #     [242.25, -29.46],  # Superior Direito
+    #     [242.25, -82.80],  # Inferior Direito
+    #     [173.67, -82.80]   # Inferior Esquerdo
+    # ], dtype=np.float32)
 
     matriz = cv2.getPerspectiveTransform(
         np.float32(pontos_csv_mm),

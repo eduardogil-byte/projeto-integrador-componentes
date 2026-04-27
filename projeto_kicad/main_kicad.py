@@ -49,7 +49,7 @@ def run():
         print("\nFim da execução.")
 
 
-KICAD_PYTHON_EXE = r"e:\aplicativos\bin\python.exe"
+KICAD_PYTHON_EXE = r"c:\Users\486973624\AppData\Local\Programs\KiCad\9.0\bin\python.exe"
 
 def gerar_csv_do_projeto(caminho_arquivo_entrada, caminho_csv_saida):
     pasta_temp = "./data/temp_uploads"

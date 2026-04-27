@@ -10,7 +10,7 @@ except ImportError:
     sys.exit(1)
 
 # Importa as suas funções de extração (que usam o pcbnew)
-from projeto_kicad.extrator_cli import extrair_dados_geometria, salvar_geometria_csv
+from extrator_cli import extrair_dados_geometria, salvar_geometria_csv
 
 def main():
     # O sys.argv pega os argumentos passados pelo terminal

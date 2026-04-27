@@ -12,6 +12,7 @@ from app.pcb_parser import carregar_edgecuts_pcb, extrair_bbox_edgecuts_para_csv
 def run_overlay_referencia(
     caminho_img: str,
     caminho_csv: str,
+    caminho_pcb: str,
     caminho_saida: str,
 ):
     os.makedirs(os.path.dirname(caminho_saida), exist_ok=True)
@@ -21,7 +22,7 @@ def run_overlay_referencia(
 
     pontos_img = detectar_contorno_pcb(img)
 
-    pontos_edge = carregar_edgecuts_pcb("data/UNOSMD_V3.kicad_pcb")
+    pontos_edge = carregar_edgecuts_pcb(caminho_pcb)
     pontos_csv_mm = extrair_bbox_edgecuts_para_csv_original(pontos_edge)
 
     pontos_csv_mm = np.array([

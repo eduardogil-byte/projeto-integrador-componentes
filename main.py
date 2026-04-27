@@ -15,6 +15,7 @@ import shutil
 import os
 import uuid
 from app.pipeline_2 import run_overlay_referencia
+from projeto_kicad.main_kicad import gerar_csv_do_projeto
 
 # Inicializa o aplicativo FastAPI
 app = FastAPI(title="API de Inspeção AOI", version="1.0")
@@ -32,11 +33,51 @@ app.add_middleware(
 )
 
 PASTA_CSVS = "./data/csvs"
+PASTA_PROJETOS = "./data/projetos"
 
 # Garante que as pastas existam
 os.makedirs("./data", exist_ok=True)
 os.makedirs("./output", exist_ok=True)
 os.makedirs(PASTA_CSVS, exist_ok=True)
+
+# =========================================================
+# ROTA: Receber projeto e GERAR CSV a partir do .kicad_pcb
+# =========================================================
+@app.post("/novo-projeto/")
+async def novo_projeto(
+    nome_projeto: str = Form(...),
+    arquivo_projeto: UploadFile = File(...)
+):
+    """
+    Recebe um arquivo de projeto (.zip ou .kicad_pcb), salva no servidor,
+    extrai os dados geométricos e gera o CSV gabarito dinamicamente.
+    """
+    try:
+        # Pega a extensão e formata o nome do projeto
+        extensao = arquivo_projeto.filename.split('.')[-1].lower()
+        nome_formatado = nome_projeto.strip().replace(" ", "_")
+        nome_arquivo = f"{nome_formatado}.{extensao}"
+        caminho_salvo = os.path.join(PASTA_PROJETOS, nome_arquivo)
+
+        # 1. Salva o arquivo ZIP ou PCB original no servidor
+        with open(caminho_salvo, "wb") as buffer:
+            shutil.copyfileobj(arquivo_projeto.file, buffer)
+
+        # 2. Define onde o CSV gerado deverá ser salvo
+        nome_csv_saida = f"{nome_formatado}.csv"
+        caminho_csv_saida = os.path.join(PASTA_CSVS, nome_csv_saida)
+        
+        # 3. Chama o seu código main_kicad.py para processar!
+        gerar_csv_do_projeto(
+            caminho_arquivo_entrada=caminho_salvo,
+            caminho_csv_saida=caminho_csv_saida
+        )
+
+        return {"mensagem": f"Projeto processado com sucesso! O gabarito '{nome_csv_saida}' já está disponível."}
+
+    except Exception as e:
+        return {"erro": f"Falha ao gerar o projeto: {str(e)}"}
+
 
 @app.get("/projetos-csv/")
 async def listar_csvs():
@@ -69,6 +110,12 @@ async def inspecionar_placa(imagem: UploadFile = File(...), projeto_csv: str = F
     if not os.path.exists(caminho_csv):
         return {"erro": f"O arquivo de gabarito '{projeto_csv}' não foi encontrado no servidor."}
 
+    nome_base = projeto_csv.replace(".csv", "")
+    caminho_pcb = os.path.join(PASTA_PROJETOS, f"{nome_base}.kicad_pcb")
+
+    if not os.path.exists(caminho_pcb):
+        return {"erro": f"O arquivo KiCad '{nome_base}.kicad_pcb' não foi encontrado na pasta de projetos."}
+
     nome_saida = f"{uuid.uuid4()}.png"
     caminho_saida = f"./output/{nome_saida}"
     
@@ -77,6 +124,7 @@ async def inspecionar_placa(imagem: UploadFile = File(...), projeto_csv: str = F
         run_overlay_referencia(
             caminho_img=caminho_img_temp,
             caminho_csv=caminho_csv,
+            caminho_pcb=caminho_pcb,
             caminho_saida=caminho_saida
         )
         

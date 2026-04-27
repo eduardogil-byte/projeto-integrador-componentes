@@ -407,10 +407,68 @@
       document
         .getElementById("btn-novo-projeto")
         .addEventListener("click", () => abrirModal("modal-projeto"));
-      function salvarProjeto() {
-        // Lógica futura para enviar o ZIP/Kicad para o FastAPI
-        alert("Preparado para enviar o projeto para a API!");
-        fecharModal("modal-projeto");
+      async function salvarProjeto() {
+        const nomeInput = document.getElementById("nome-projeto").value;
+        const arquivoInput =
+          document.getElementById("arquivo-projeto").files[0];
+
+        // 1. Verifica se o usuário preencheu tudo
+        if (!nomeInput || !arquivoInput) {
+          alert(
+            "Por favor, digite um nome e selecione o arquivo .zip ou .kicad_pcb!",
+          );
+          return;
+        }
+
+        // 2. Prepara os dados para enviar (como se fosse um formulário)
+        const formData = new FormData();
+        formData.append("arquivo_projeto", arquivoInput);
+        // Enviamos o nome que o usuário digitou (você pode usar isso no backend se quiser)
+        formData.append("nome_projeto", nomeInput);
+
+        // 3. Muda o texto do botão para mostrar que está carregando
+        const btnSalvar = document.querySelector(
+          "#modal-projeto button[onclick='salvarProjeto()']",
+        );
+        const textoOriginal = btnSalvar.textContent;
+        btnSalvar.textContent = "Processando no KiCad... Aguarde...";
+        btnSalvar.disabled = true;
+
+        try {
+          // 4. Manda para a rota do FastAPI
+          const response = await fetch("http://127.0.0.1:8000/novo-projeto/", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              "Erro na comunicação com a API ao salvar o projeto.",
+            );
+          }
+
+          const data = await response.json();
+
+          if (data.erro) {
+            throw new Error(data.erro);
+          }
+
+          alert("Sucesso! Projeto processado e adicionado à lista.");
+
+          // 5. Fecha o modal e limpa os campos
+          fecharModal("modal-projeto");
+          document.getElementById("nome-projeto").value = "";
+          document.getElementById("arquivo-projeto").value = "";
+
+          // 6. A MÁGICA: Recarrega a caixinha de seleção para mostrar o CSV recém-criado!
+          await carregarCSVs();
+        } catch (error) {
+          alert("Erro: " + error.message);
+        } finally {
+          // Volta o botão ao normal, dando erro ou sucesso
+          btnSalvar.textContent = textoOriginal;
+          btnSalvar.disabled = false;
+        }
       }
 
       // --- Importar Arquivo ---

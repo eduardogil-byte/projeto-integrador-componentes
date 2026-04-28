@@ -11,27 +11,23 @@ def descompactar_zip(caminho_zip, pasta_destino):
 
     return pasta_destino
 
-def buscar_arquivos_kicad(pasta_extraida):
-    caminho_sch = None
-    caminho_pcb = None
+from pathlib import Path
 
-    for arquivo in Path(pasta_extraida).rglob('*'):
-        if arquivo.suffix == '.kicad_sch':
-            caminho_sch = str(arquivo)
-        if arquivo.suffix == '.kicad_pcb':
-            novo_caminho = f"./data/projetos/{arquivo.name}"
-            shutil.move(str(arquivo), str(novo_caminho))
-            caminho_pcb = str(novo_caminho)
+def localizar_arquivo_projeto(pasta_extraida):
+    prioridades = [".kicad_pcb", ".pcbdoc", ".brd"]
+    encontrados = {ext: None for ext in prioridades}
 
-    if not caminho_pcb:
-        raise FileNotFoundError("Erro: O arquivo .zip deve conter pelo menos um .kicad_pcb.")
-    
-    return caminho_sch, caminho_pcb
+    for arquivo in Path(pasta_extraida).rglob("*"):
+        ext = arquivo.suffix.lower()
+        if ext in encontrados and encontrados[ext] is None:
+            encontrados[ext] = str(arquivo)
 
-def limpar_pasta_temporaria(pasta_para_deletar, caminho_zip_original=None):
-    
-    if os.path.exists(pasta_para_deletar):
-        shutil.rmtree(pasta_para_deletar)
+    for ext in prioridades:
+        if encontrados[ext]:
+            return encontrados[ext]
 
-    if caminho_zip_original and os.path.exists(caminho_zip_original):
-        os.remove(caminho_zip_original)
+    return None
+
+def limpar_pasta_temporaria(pasta):
+    if os.path.exists(pasta):
+        shutil.rmtree(pasta)
